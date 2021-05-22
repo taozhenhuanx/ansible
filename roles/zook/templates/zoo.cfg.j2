@@ -1,0 +1,11 @@
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir={{ zk_data_dir }}
+dataLogDir={{ zk_log_dir }}
+clientPort={{ zk_prot }}
+
+{% for host in ansible_play_hosts %}
+server.{{ loop.index }}={{ host }}:{{ zk_inner_port1 }}:{{ zk_inner_port2 }}
+{% endfor %}
+

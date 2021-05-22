@@ -1,0 +1,16 @@
+---
+- name: install mariadb
+  yum:
+    name: mariadb-server
+    state: present
+
+- name: start mariadb
+  service:
+    name: mariadb 
+    state: restarted 
+    enabled: true
+- name: 数据库设置密码权限
+  shell: |
+    mysql -e "grant all privileges on *.* to root@'%' identified by 'zabbix'";
+    mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('zabbix')"; 
+

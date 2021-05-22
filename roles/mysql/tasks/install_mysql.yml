@@ -1,0 +1,49 @@
+---
+- name: 创建MySQL用户组
+  group: name={{ mysql_group }}
+
+- name: 创建MySQL用户
+  user: 
+    name={{ mysql_user }}
+    shell=/sbin/nologin
+    group={{ mysql_group }}
+
+- name: 创建mysql部署相关路径
+  file: path={{ item.path }} state={{ item.type }} owner={{ item.owner }} group={{ item.group }} mode={{ item.mode }}
+  with_items:
+    - {path: '{{ mysql_dir }}',type: 'directory',owner: '{{ mysql_user }}',group: '{{ mysql_group }}',mode: '755'}
+    - {path: '{{ mysql_data_dir }}',type: 'directory',owner: '{{ mysql_user }}',group: '{{ mysql_group }}',mode: '755'}
+    - {path: '{{ mysql_data_dirx }}',type: 'directory',owner: '{{ mysql_user }}',group: '{{ mysql_group }}',mode: '755'}
+    - {path: '{{ mysql_binlog_dir }}',type: 'directory',owner: '{{ mysql_user }}',group: '{{ mysql_group }}',mode: '755'}
+
+- name: 拷贝配置文件
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  register: confChange
+
+- name: debug,练习使用
+  debug: var=confChange
+
+#- name: 部署MySQL数据库
+#  unarchive: src={{ mysql_pkg }} dest={{ mysql_dir }} mode=755
+
+- name: rename
+  shell: mv /app/mysql-5.7.24-linux-glibc2.12-x86_64/ /app/mysql/
+
+- name: 添加环境变量
+  blockinfile:
+    dest: /etc/profile
+    create: yes
+    backup: yes
+    block: export PATH={{ mysql_dir }}/mysql/bin:$PATH
+
+- name: 初始化数据
+  shell: /app/mysql/bin/mysqld --initialize-insecure  --user=mysql --basedir={{ mysql_dir }}/mysql --datadir={{ mysql_data_dirx }}
+
+- name: copy 启动脚本
+  template: src=mysqld.service.j2 dest=/etc/systemd/system/mysqld.service
+
+- name: 启动MySQL
+  shell: systemctl daemon-reload && systemctl start mysqld && systemctl enable mysqld
+
+- name: 校验端口
+  wait_for: port=3306 state=started delay=5 timeout=60

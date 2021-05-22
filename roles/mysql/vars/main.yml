@@ -1,0 +1,25 @@
+# MySQL相关变量
+
+mysql_user: "mysql"
+mysql_group: "{{ mysql_user }}"
+
+mysql_dir: "/app"
+mysql_data_dir: "/data"
+mysql_data_dirx: "{{ mysql_data_dir }}/mysql"
+mysql_binlog_dir: "{{ mysql_data_dir }}/binlog"
+
+# 定义版本号及获取路径
+mysql_pkg: "mysql.tar.gz"
+
+mysql_port: "3306"
+
+mysql_root: "root"
+
+mysql_password: "123456"
+
+
+# 定义主从复制用户信息
+#username: "tzh"
+#password: "123"
+
+

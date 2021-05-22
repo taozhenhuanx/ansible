@@ -1,0 +1,53 @@
+---
+#- name:
+#  yum:
+#    name: MySQL-python
+
+#- name: 改名
+#  shell: mv /app/zabbix-4.0.15/ /app/zabbix4
+
+#- name: create a database
+#  mysql_db:
+#    login_host: "192.168.1.131"
+#    login_user: "root"
+#    login_password: "zabbix"
+#    login_port: "3306"
+#    name: "zabbix"
+#    encoding: "utf8"
+#    state: "present"
+
+- name: create a database
+  shell: mysql -uroot -pzabbix -e "create database zabbix character set utf8 collate utf8_bin";
+
+- name: import  database
+  mysql_db:
+    login_host: "192.168.1.132"
+    login_user: "root"
+    login_password: "zabbix"
+    login_port: "3306"
+    name: "zabbix"
+    target: "/app/zabbix4/database/mysql/schema.sql"
+    state: "import"
+
+- name: import  database
+  mysql_db:
+    login_host: "192.168.1.132"
+    login_user: "root"
+    login_password: "zabbix"
+    login_port: "3306"
+    name: "zabbix"
+    target: "/app/zabbix4/database/mysql/images.sql"
+    state: "import"
+
+- name: import  database
+  mysql_db:
+    login_host: "192.168.1.132"
+    login_user: "root"
+    login_password: "zabbix"
+    login_port: "3306"
+    name: "zabbix"
+    target: "/app/zabbix4/database/mysql/data.sql"
+    state: "import"
+#    mysql -uroot -pzabbix  zabbix < /app/zabbix4/database/mysql/schema.sql
+#    mysql -uroot -pzabbix  zabbix < /app/zabbix-4.0.15/database/mysql/images.sql
+#    mysql -uroot -pzabbix  zabbix < /app/zabbix-4.0.15/database/mysql/data.sql 

@@ -1,0 +1,5 @@
+- name: 更换镜像源
+  shell: curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo && yum clean all && yum makecache
+
+- name: 安装基础依赖环境
+  shell: yum install wget telnet net-tools python-paramiko gcc gcc-c++ dejavu-sans-fonts python-setuptools openssl openssh-server sendmail mailx net-snmp net-snmp-devel net-snmp-utils freetype-devel libpng-devel perl unbound libtasn1-devel p11-kit-devel OpenIPMI unixODBC  libevent-devel  mysql-devel  libxml2-devel  libssh2-devel  OpenIPMI-devel   openldap-devel  curl-devel unixODBC-devel  python-devel   python-2.6.6-64.el6.x86_64 -y

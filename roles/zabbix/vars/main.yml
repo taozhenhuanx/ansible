@@ -1,0 +1,30 @@
+---
+localhost: 192.168.1.131
+
+DBName: zabbix
+
+DBUser: zabbix
+
+DBPassword: zabbix
+
+zabbix_group: zabbix
+
+zabbix_user: zabbix
+
+max_execution_time: 300
+
+memory_limit: 128
+
+post_max_size: 16
+
+upload_max_filesize: 2
+
+max_input_time: 300
+
+max_input_vars: 10000
+
+always_populate_raw_post_data: -1
+
+datetimezone: Asia/Shanghai
+
+

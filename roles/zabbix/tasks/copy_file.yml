@@ -1,0 +1,18 @@
+---
+- name: create app
+  shell: mkdir /app
+
+- name: 拷贝安装包
+  unarchive:
+    src: zabbix-4.0.15.tar.gz
+    dest: /app
+
+- name: configure
+  shell: ./configure --prefix=/app/zabbix --enable-server --enable-agent --enable-java --with-mysql --with-libxml2 --with-unixodbc --with-net-snmp --with-ssh2 --with-openipmi --with-ldap --with-libcurl --with-iconv
+  args:
+    chdir: /app/zabbix-4.0.15
+
+- name: "make"
+  shell: make && make install
+  args:
+    chdir: /app/zabbix-4.0.15

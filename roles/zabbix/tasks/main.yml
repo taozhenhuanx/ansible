@@ -1,0 +1,7 @@
+---
+#- import_tasks: install_jdk.yml
+#- import_tasks: install_rely.yml
+#- import_tasks: copy_file.yml
+#- import_tasks: install_mariadb.yml
+#- import_tasks: import_db.yml
+- import_tasks: start_zabbix.yml

@@ -1,0 +1,4 @@
+- hosts: mysql
+  remote_user: root
+  roles:
+  - mysql

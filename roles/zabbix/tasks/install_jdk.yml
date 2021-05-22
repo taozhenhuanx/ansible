@@ -1,0 +1,9 @@
+---
+
+- name: copy jdk
+  copy:
+    src: jdk-8u231-linux-x64.rpm
+    dest: /usr/local/src
+
+- name: install jdk
+  shell: yum localinstall -y /usr/local/src/*

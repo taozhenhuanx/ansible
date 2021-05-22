@@ -1,0 +1,27 @@
+# zookeeper相关环境变量
+zk_user: "root"
+
+zk_group: "root"
+
+# 部署应用的名字(scp过去解压后的名字)
+app_name: "zookeeper"
+
+zk_install_dir: "/app"
+
+zk_log_dir: "{{ zk_install_dir }}/{{ app_name }}/logs"
+
+zk_data_dir: "{{ zk_install_dir }}/{{ app_name }}/data"
+
+zk_conf_dir: "{{ zk_install_dir }}/{{ app_name }}/conf"
+
+zk_bin_dir: "{{ zk_install_dir }}/{{ app_name }}/bin"
+
+zk_pkg: "zookeeper.tar.gz"
+
+zk_prot: "2181"
+
+zk_inner_port1: "2888"
+
+zk_inner_port2: "3888"
+
+

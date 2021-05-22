@@ -1,0 +1,13 @@
+# 定义安装jdk相关变量
+
+# 版本号
+jdk_pkg: "jdk-8u221-linux-x64.tar.gz"
+
+# 安装路径
+jdk_dir: "/usr/local"
+
+# jdk版本号
+jdk_version: "jdk1.8.0_221"
+
+# JAVA_HOME
+JAVA_HOME: "{{ jdk_dir }}/{{ jdk_version }}"

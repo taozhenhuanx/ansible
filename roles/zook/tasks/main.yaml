@@ -1,0 +1,27 @@
+---
+- name: 创建zk用户,此处默认使用root，故不做创建
+  shell: pwd
+
+- name: 创建部署zk所需文件夹
+  file: path={{ item.path }} state={{ item.type }} owner={{ item.owner }} group={{ item.group }} mode={{ item.mode }}
+  with_items:
+    - {path: '{{ zk_install_dir }}',type: 'directory',owner: '{{ zk_user }}',group: '{{ zk_group }}',mode: '755'}
+    - {path: '{{ zk_log_dir }}',type: 'directory',owner: '{{ zk_user }}',group: '{{ zk_group }}',mode: '755'}
+    - {path: '{{ zk_data_dir }}',type: 'directory',owner: '{{ zk_user }}',group: '{{ zk_group }}',mode: '755'}
+
+- name: 部署zk
+  unarchive: src={{ zk_pkg }} dest={{ zk_install_dir }} mode=755
+
+- name: copy zoo.cfg
+  template: src=zoo.cfg.j2 dest={{ zk_conf_dir }}/zoo.cfg
+
+- name: echo myid
+  shell: echo {{ id }} > "{{ zk_data_dir }}/myid"
+
+- name: start zookeeper service
+  shell: "{{ zk_bin_dir }}/zkServer.sh start "
+  ignore_errors: yes
+
+- name: 校验端口
+  wait_for: host={{ ansible_default_ipv4.address }} port={{ zk_prot }} state=started delay=5 timeout=60
+

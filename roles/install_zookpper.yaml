@@ -1,0 +1,4 @@
+- hosts: zook
+  remote_user: root
+  roles:
+  - zook

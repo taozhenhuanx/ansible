@@ -1,0 +1,63 @@
+---
+- name: check mysql port
+  wait_for:
+    host: "{{ mysql_ip }}"
+    port: "{{ mysql_port }}"
+    state: started
+
+#- name: 数据库设置密码权限
+#  shell: |
+#    /app/mysql/bin/mysql -e "grant all privileges on *.* to root@'%' identified by '{{ mysql_password }}'";
+#    /app/mysql/bin/mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('{{ mysql_password }}')";
+
+- name: 安装MySQL-python
+  yum: name=MySQL-python state=present
+
+- name: 向从属主机授予复制权限
+  mysql_user:
+    login_unix_socket: "/tmp/mysql.sock"
+    login_user: "{{ mysql_root }}"
+    login_port: "{{ mysql_port }}"
+    login_password: "{{ mysql_password }}"
+    name: "{{ username }}"
+    host: '%'
+    password: "{{ password }}"
+    append_privs: yes
+    priv: '*.*:REPLICATION SLAVE'
+    state: "present"
+  when: inventory_hostname in groups['mysql_master']
+
+- name: 停止复制
+  mysql_replication:
+    login_unix_socket: "/tmp/mysql.sock"
+    login_host: "{{ groups.mysql_slave[0] }}"
+    login_user: "{{ mysql_root }}"
+    login_password: "{{ mysql_password }}"
+    config_file: "/etc/my.cnf"
+    mode: stopslave
+  when: inventory_hostname in groups['mysql_slave']
+
+- name: 构建基于GTID的主从复制
+  shell: /app/mysql/bin/mysql -u"{{ mysql_root }}"  -p"{{ mysql_password }}" -e "change master to master_host='{{ groups.mysql_master[0] }}',master_user='{{ username }}',master_password='{{ password }}', MASTER_AUTO_POSITION=1"
+  when: inventory_hostname in groups['mysql_slave']  
+
+- name: 启动主从
+  mysql_replication:
+    login_unix_socket: "/tmp/mysql.sock"
+    login_host: "{{ groups.mysql_slave[0] }}"
+    login_user: "{{ mysql_root }}"
+    login_port: "{{ mysql_port }}"
+    login_password: "{{ mysql_password }}"
+    config_file: "/etc/my.cnf"
+    mode: startslave
+  when: inventory_hostname in groups['mysql_slave']
+
+- name: 查看主从状态
+  shell: /app/mysql/bin/mysql  -u"{{ mysql_root }}"  -p"{{ mysql_password }}" -e  "show slave  status\G" | grep Running
+  register: mysql_state
+  when: inventory_hostname in groups['mysql_slave']
+
+- name: debug
+  debug:
+    msg: "{{ mysql_state.stdout }}"
+  when: inventory_hostname in groups['mysql_slave']
