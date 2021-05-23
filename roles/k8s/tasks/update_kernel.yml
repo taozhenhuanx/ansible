@@ -1,0 +1,48 @@
+---
+
+- name: copy_kernel_file1
+  copy: src=kernel-ml-4.19.12-1.el7.elrepo.x86_64.rpm dest=/root/kernel-ml-4.19.12-1.el7.elrepo.x86_64.rpm
+
+- name: copy_kernel_file2
+  copy: src=kernel-ml-devel-4.19.12-1.el7.elrepo.x86_64.rpm dest=kernel-ml-devel-4.19.12-1.el7.elrepo.x86_64.rpm
+
+- name: update_kernel
+  shell: cd /root && yum localinstall  kernel-ml* -y
+
+- name: 更改内核启动引导1
+  shell: grub2-set-default 0 && grub2-mkconfig -o /etc/grub2.cfg
+
+- name: 更改内核启动引导2
+  shell: grubby --args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
+
+- name: 删除内核安装包
+  shell: rm -rf /root/kernel-ml*
+  
+- name: reboot
+  shell: 'sleep 1 && reboot && sleep 1'
+  async: 60
+  poll: 0
+
+- block:   # 定义块
+  - name: sleep 120s
+    shell: 'sleep 120s'
+    delegate_to: 127.0.0.1  # 委派任务给本机
+    
+  - name: check machine live or not 
+    shell: "ping 192.168.1.106 -c 4"
+    delegate_to: 127.0.0.1  # 委派任务给本机
+
+  # 当上面的块失败时，该关键字(rescue)下面的任务将被执行 
+  rescue:  
+    - name: sleep 120s
+      shell: 'sleep 120s'
+      delegate_to: 127.0.0.1  # 委派任务给本机
+
+    - name: check machine live or not 
+      shell: "ping {{ k8s_all_host_set }} -c 4"
+      delegate_to: 127.0.0.1  # 委派任务给本机
+
+  # always关键字，不管block块是否执行成功，该关键字定义的任务都要被执行
+  always:  
+    - debug:
+        msg: "echo test----"

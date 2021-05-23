@@ -1,0 +1,2 @@
+all-k8s-host: "xxx"
+k8s_all_host_set: "192.168.1.106"

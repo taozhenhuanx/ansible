@@ -1,0 +1,129 @@
+---
+# k8s 安装前一些基础设置
+- name: 配置/etc/hosts文件
+  shell: pwd
+
+- name: 删除原来的yum源
+  shell: rm -rf /etc/yum.repos.d/*
+
+- name: 更换yum源1
+  template: src=CentOS-Base.repo.j2 dest=/etc/yum.repos.d/CentOS-Base.repo
+
+- name: makecache yum源
+  shell: yum clean all && yum makecache
+
+- name: 安装常用工具1
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: latest
+
+- name: 更换yum源2
+  shell: yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+- name: 添加k8s的yum源
+  template: src=kubernetes.repo.j2 dest=/etc/yum.repos.d/kubernetes.repo
+
+- name: 修改CentOS-Base.repo
+  shell: sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo
+
+- name: 安装常用工具2
+  yum:
+    name:
+      - wget
+      - lrzsz
+      - psmisc
+      - vim
+      - net-tools
+      - telnet
+      - git
+      - ipvsadm
+      - ipset
+      - sysstat
+      - conntrack
+    state: latest 
+
+- name: 关闭 firewall
+  service:
+      name: firewalld
+      state: stopped
+      enabled: no
+
+- name: 关闭 NetworkManager
+  service:
+      name: NetworkManager
+      state: stopped
+      enabled: no
+
+- name: 关闭 selinux
+  selinux:
+    policy: targeted        
+    state:  disabled
+
+- name: 安装ntpdate
+  yum:
+    name:
+      - http://mirrors.wlnmp.com/centos/wlnmp-release-centos.noarch.rpm
+      - ntpdate
+    state: present
+
+- name: 更改时区
+  shell: ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+- name: 设置定时任务同步时间1
+  shell: echo 'Asia/Shanghai' >/etc/timezone && ntpdate time2.aliyun.com
+
+- name: 设置定时任务同步时间2
+  cron:
+    name: "update time to aliyum"
+    minute: "5"
+    job: ntpdate time2.aliyun.com
+
+- name: 优化Linux
+  blockinfile:
+    dest: /etc/security/limits.conf
+    insertafter: EOF
+    create: yes
+    backup: yes
+    marker: # End of file
+    block: |
+      * soft nofile 655360
+      * hard nofile 131072
+      * soft nproc 655350
+      * hard nproc 655350
+      * soft memlock unlimited
+      * hard memlock unlimited
+
+- name: update
+  shell: yum update -y --exclude=kernel*
+
+- name: reboot
+  shell: 'sleep 1 && reboot && sleep 1'
+  async: 60
+  poll: 0
+
+- block:   # 定义块
+  - name: sleep 120s
+    shell: 'sleep 120s'
+    delegate_to: 127.0.0.1  # 委派任务给本机
+    
+  - name: check machine live or not 
+    shell: ping {{ k8s_all_host_set }} -c 4
+    delegate_to: 127.0.0.1  # 委派任务给本机
+
+  # 当上面的块失败时，该关键字(rescue)下面的任务将被执行 
+  rescue:  
+    - name: sleep 120s
+      shell: 'sleep 120s'
+      delegate_to: 127.0.0.1  # 委派任务给本机
+
+    - name: check machine live or not
+      shell: ping k8s_all_host_set -c 4
+      delegate_to: 127.0.0.1  # 委派任务给本机
+
+  # always关键字，不管block块是否执行成功，该关键字定义的任务都要被执行
+  always:  
+    - debug:
+        msg: "echo test----"
