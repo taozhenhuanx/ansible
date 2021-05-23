@@ -1,7 +1,23 @@
 ---
 # k8s 安装前一些基础设置
-- name: 配置/etc/hosts文件
-  shell: pwd
+- name: 设置 hostname
+  hostname: name={{ hostname }}
+
+- name: 防止重复执行/etc/hosts文件映射重复，先清空原来的
+  shell: echo '127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4'> /etc/hosts
+
+- name: 防止重复执行/etc/hosts文件映射重复，先清空原来的
+  shell: echo '::1         localhost localhost.localdomain localhost6 localhost6.localdomain6' >> /etc/hosts
+
+- name: 更改 /etc/hosts
+  shell: echo {{ item.hostip }} {{ item.hostname }} >> /etc/hosts
+  with_items:
+    - {hostip: '{{ ip_master01 }}',hostname: '{{ hname_master01 }}'}
+    - {hostip: '{{ ip_master02 }}',hostname: '{{ hname_master02 }}'}
+    - {hostip: '{{ ip_master03 }}',hostname: '{{ hname_master03 }}'}
+    - {hostip: '{{ vip_master_lb }}',hostname: '{{ lbname_master03 }}'}
+    - {hostip: '{{ ip_node01 }}',hostname: '{{ hname_node01 }}'}
+    - {hostip: '{{ ip_node02 }}',hostname: '{{ hname_node02 }}'}
 
 - name: 删除原来的yum源
   shell: rm -rf /etc/yum.repos.d/*
@@ -43,6 +59,7 @@
       - ipset
       - sysstat
       - conntrack
+      - ntpdate
     state: latest 
 
 - name: 关闭 firewall
@@ -62,13 +79,6 @@
     policy: targeted        
     state:  disabled
 
-- name: 安装ntpdate
-  yum:
-    name:
-      - http://mirrors.wlnmp.com/centos/wlnmp-release-centos.noarch.rpm
-      - ntpdate
-    state: present
-
 - name: 更改时区
   shell: ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
@@ -87,7 +97,6 @@
     insertafter: EOF
     create: yes
     backup: yes
-    marker: # End of file
     block: |
       * soft nofile 655360
       * hard nofile 131072
@@ -96,7 +105,7 @@
       * soft memlock unlimited
       * hard memlock unlimited
 
-- name: update
+- name: update centos7 自带软件包
   shell: yum update -y --exclude=kernel*
 
 - name: reboot
@@ -106,7 +115,7 @@
 
 - block:   # 定义块
   - name: sleep 120s
-    shell: 'sleep 120s'
+    shell: 'sleep 60s'
     delegate_to: 127.0.0.1  # 委派任务给本机
     
   - name: check machine live or not 
@@ -116,14 +125,14 @@
   # 当上面的块失败时，该关键字(rescue)下面的任务将被执行 
   rescue:  
     - name: sleep 120s
-      shell: 'sleep 120s'
+      shell: 'sleep 60s'
       delegate_to: 127.0.0.1  # 委派任务给本机
 
     - name: check machine live or not
-      shell: ping k8s_all_host_set -c 4
+      shell: ping {{ k8s_all_host_set }} -c 4
       delegate_to: 127.0.0.1  # 委派任务给本机
 
-  # always关键字，不管block块是否执行成功，该关键字定义的任务都要被执行
+  # always关键字，不管block块是否执行成功，该关键字定义的任务都要被执行。这里是测试而已！
   always:  
     - debug:
         msg: "echo test----"

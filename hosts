@@ -72,5 +72,11 @@
 192.168.1.112 id="2"
 192.168.1.113 id="3"
 
-[k8s_all_host_set]
-192.168.1.106
+
+
+[k8s_all_host_set]  # hostname--->写对应节点的主机名称
+192.168.1.106 hostname="k8s-master01"
+192.168.1.107 hostname="k8s-master02"  ansible_ssh_port=22 ansible_ssh_user=root ansible_ssh_pass=huanshao
+#192.168.1.10 hostname="k8s-master03"
+#192.168.1.106 hostname="k8s-node01"
+#192.168.1.106 hostname="k8s-node02"

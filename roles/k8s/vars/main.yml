@@ -1,2 +1,18 @@
-all-k8s-host: "xxx"
 k8s_all_host_set: "192.168.1.106"
+
+# 各个服务器的ip。lb为keeplived的vip
+ip_master01: "192.168.1.106"
+ip_master02: "192.168.1.107"
+ip_master03: "192.168.1.108"
+vip_master_lb: "192.168.1.116"
+ip_node01: "192.168.1.109"
+ip_node02: "192.168.1.110"
+
+# groups.k8s_all_host_set[1] --->  只能获取到hosts分组（groups）中k8s_all_host_set的ip信息[0123]
+# 各个服务器hostname(得跟hosts的名称一直),跟上面的ip一一对应，等会写到hosts文件
+hname_master01: "k8s-master01"
+hname_master02: "k8s-master02"
+hname_master03: "k8s-master03"
+lbname_master03: "k8s-master-lb"
+hname_node01: "k8s-node01"
+hname_node02: "k8s-node02"

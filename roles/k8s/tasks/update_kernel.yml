@@ -1,10 +1,10 @@
 ---
 
 - name: copy_kernel_file1
-  copy: src=kernel-ml-4.19.12-1.el7.elrepo.x86_64.rpm dest=/root/kernel-ml-4.19.12-1.el7.elrepo.x86_64.rpm
+  copy: src=kernel-ml-4.19.12-1.el7.elrepo.x86_64.rpm  dest=/root/kernel-ml-4.19.12-1.el7.elrepo.x86_64.rpm
 
 - name: copy_kernel_file2
-  copy: src=kernel-ml-devel-4.19.12-1.el7.elrepo.x86_64.rpm dest=kernel-ml-devel-4.19.12-1.el7.elrepo.x86_64.rpm
+  copy: src=kernel-ml-devel-4.19.12-1.el7.elrepo.x86_64.rpm  dest=/root/kernel-ml-devel-4.19.12-1.el7.elrepo.x86_64.rpm
 
 - name: update_kernel
   shell: cd /root && yum localinstall  kernel-ml* -y
